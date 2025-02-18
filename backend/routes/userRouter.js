@@ -27,11 +27,13 @@ router.post("/signup", async (req,res) => {
                 lastName: lastName
             });
 
-            const token = jwt.sign({email}, process.env.JWT_SECRET);
+            const createdEmail = createdUser?.email;
+
+            const token = jwt.sign({createdEmail}, process.env.JWT_SECRET);
 
             res.status(200).json({
                 token: token,
-                message: "User Created Successfully!"
+                message: "User created successfully!"
             });
         }else{
             return res.status(409).json({
@@ -48,7 +50,6 @@ router.post("/signup", async (req,res) => {
 // Login endpoint
 router.post("/login", async (req,res) => {
     const { email, password } = req.body;
-    // const authorization= req.headers.authorization;
 
     try {
         //We should first check if there is valid user in our DB with the following email:
@@ -60,6 +61,8 @@ router.post("/login", async (req,res) => {
             })
         }
 
+        const user_email = user.email;
+
         //Checking if the user entered the right password for the associated account.
         // const isPasswordMatch = await user.matchPassword(password);
         var isPasswordMatch = false;
@@ -67,10 +70,10 @@ router.post("/login", async (req,res) => {
             isPasswordMatch = true
         }
         if(isPasswordMatch){
-            // var token = jwt.sign({email}, process.env.JWT_SECRET);
+            const token = jwt.sign({user_email}, process.env.JWT_SECRET);
 
             res.status(200).json({
-                // token: token,
+                token: token,
                 message: "User Logged In Successfully!"
             })
         }else{
