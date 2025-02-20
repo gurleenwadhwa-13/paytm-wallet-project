@@ -1,7 +1,8 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import User from "../db.js";
-import { signUpSchema } from "../zodSchemas/inputSchemas.js";
+import { loginSchema, signUpSchema, updateBody } from "../zodSchemas/userInputSchemas.js";
+import { authMiddleware } from "../middleware.js";
 
 const router = Router();
 
@@ -49,6 +50,14 @@ router.post("/signup", async (req,res) => {
 
 // Login endpoint
 router.post("/login", async (req,res) => {
+    //zod validations
+    const {success} = loginSchema.safeParse(req.body);
+    if(!success){
+        return res.json({
+            error: "Invalid Inputs"
+        })
+    }
+
     const { email, password } = req.body;
 
     try {
@@ -83,14 +92,38 @@ router.post("/login", async (req,res) => {
         }
     } catch (error) {
         res.status(404).json({
-            error: error
+            error: error.errors
         })
     }
 })
 
-// //update user info
-// router.put("api/update_user/:user_id", authMiddleware, async (req,res) => {
+//update user info
+router.patch("/:user_id", authMiddleware, async (req,res) => {
+    const { success } = updateBody.safeParse(req.body);
 
-// })
+    if(!success){
+        return res.json({
+            error: "Provided input is not valid!"
+        })
+    }
+
+    const userId = req.params.user_id;
+
+    try {
+        const user = await User.findOneAndUpdate({_id: userId}, req.body, {new:true});
+        if(user){
+            res.status(200).json({
+                message: "Field was updated!",
+                user: { user }
+            })
+        }else{
+            res.status(403).json({message: "Cannot update user!"})
+        }
+    } catch (error) {
+        return res.status(403).json({
+            error: error
+        })
+    }
+})
 
 export default router;
