@@ -126,4 +126,32 @@ router.patch("/:user_id", authMiddleware, async (req,res) => {
     }
 })
 
+//route to get all users.
+router.get("/bulk", authMiddleware, async (req,res) => {
+    const filter = req.query.filter || "";
+    console.log(filter);
+    const allUsers = await User.find({
+        $or: [
+            {
+                firstName: { $regex: filter}
+            },{
+                lastName: { $regex: filter}
+            },{
+                email: { $regex: filter}
+            }
+        ]
+    })
+
+    console.log(allUsers);
+
+    res.json({
+        user : allUsers.map(user => ({
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email
+        }))
+    })
+})
+
 export default router;
