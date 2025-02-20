@@ -1,17 +1,24 @@
-import mongoose from "mongoose"
+import { Schema, model} from "mongoose"
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
     email: String,
     password: {
         type: String,
         select: false,
     },
     firstName: String,
-    lastName: String,
+    lastName: String
+});
+
+const bankAccountSchema = new Schema({
+    userId: { 
+        type: Schema.Types.ObjectId,
+        ref: "Users",
+        required: true},
     walletBalance: {
         type: Number,
-        required: false
-    },
+        required: true
+    }
 });
 
 //User logic to hash passwords
@@ -29,4 +36,9 @@ const userSchema = new mongoose.Schema({
 // };
 
 
-export default mongoose.model('Users', userSchema);
+const Users = model('Users', userSchema);
+const Accounts = model('Accounts', bankAccountSchema);
+
+module.exports = {
+    Accounts, Users
+}
