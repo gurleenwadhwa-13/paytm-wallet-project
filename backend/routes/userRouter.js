@@ -1,6 +1,6 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
-import User from "../db.js";
+import { User, Accounts } from "../db.js";
 import { loginSchema, signUpSchema, updateBody } from "../zodSchemas/userInputSchemas.js";
 import { authMiddleware } from "../middleware.js";
 
@@ -28,7 +28,14 @@ router.post("/signup", async (req,res) => {
                 lastName: lastName
             });
 
+            const userId = createdUser._id;
+
             const createdEmail = createdUser?.email;
+
+            await Accounts.create({
+                userId: userId,
+                walletBalance: 1 + Math.random() * 1000
+            })
 
             const token = jwt.sign({createdEmail}, process.env.JWT_SECRET);
 
