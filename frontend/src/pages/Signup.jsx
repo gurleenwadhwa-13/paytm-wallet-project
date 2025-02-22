@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { BottomWarning } from "../components/BottomWarning"
 import { Button } from "../components/Button"
 import { Heading } from "../components/Heading"
@@ -7,6 +7,7 @@ import { SubHeading } from "../components/SubHeading"
 import { userAtom } from "../state/userAtom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"
 
 export const Signup = () => {
     const [email, setEmail] = useState("");
@@ -14,18 +15,29 @@ export const Signup = () => {
     const [lastName, setLastName] = useState("");
     const [password, setPassword]= useState("");
     const currentUser = useRecoilValue(userAtom);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (isSubmitted) {
+            axios.post("http://localhost:8800/api/user/signup", {
+                email, password, firstName, lastName
+            }).then((response) => {
+                console.log(response.data.token);
+                localStorage.setItem("authToken", data.data.token);
+                setIsSubmitted(false); // Reset state after a successful request
+                navigate("/dashboard");
+            }).catch((error) => {
+                console.error(error);
+                setIsSubmitted(false); // Reset state even if an error occurs
+            });
+        }
+    }, [isSubmitted]); // Runs only when `isSubmitted` changes
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        axios.post("http://localhost:8800/api/user/signup", {
-            email, password, firstName, lastName
-        }).then((data) => {
-            console.log(data.message);
-        }).catch((error) => {
-            console.error(error);
-        })
-    }
+        setIsSubmitted(true); // Triggers the API call once
+    };
 
     return <div className="bg-slate-300 h-screen flex justify-center">
     <div className="flex flex-col justify-center">
